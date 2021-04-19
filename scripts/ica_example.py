@@ -22,7 +22,37 @@ tmin, tmax = -0.2, 0.5
 events = mne.find_events(raw)
 
 # pick only gradiometers for this demo
+raw.info['bads'] = []  # for this demo we want to keep all channels
+raw.info['projs'] = []  # empty projectors, we don't need them for this demo
 raw.pick_types(meg='grad', eeg=False)
+
+# epoch the data and compute the covariance
+epochs = mne.Epochs(raw, events, event_id, tmin, tmax, baseline=(None, 0),
+                    preload=True)
+cov = mne.compute_covariance(epochs)
+
+# estimate rank and plot for full-rank data
+rank_est = np.linalg.matrix_rank(cov.data)
+
+# do an svd on the data:
+sing_vals = sp.linalg.svd(cov.data, compute_uv=False)
+sing_vals[sing_vals <= 0] = 1e-10 * sing_vals[sing_vals > 0].min()
+
+# plot singular value spectrum and annotate:
+y_lims = (10e-43, 10e-20)
+rank_col = 'red'
+plt.figure()
+plt.plot(sing_vals, color='navy', linewidth=2)
+plt.axvline(rank_est, color=rank_col, linestyle='--')
+plt.text(135, sing_vals[2], 'rank estimate = %s' % rank_est, color=rank_col)
+plt.ylim(y_lims)
+plt.yscale('log')
+plt.ylabel('Singular values')
+plt.xlabel('Singular value index')
+
+# save the figure
+fig_fname = op.join(fig_path, 'sing_vals_fullrank.eps')
+plt.savefig(fig_fname)
 
 # high-pass filter the data for ICA
 filt_raw = raw.copy()
@@ -58,10 +88,11 @@ sing_vals = sp.linalg.svd(cov.data, compute_uv=False)
 sing_vals[sing_vals <= 0] = 1e-10 * sing_vals[sing_vals > 0].min()
 
 # plot singular value spectrum and annotate:
-rank_col = 'red'
+plt.figure()
 plt.plot(sing_vals, color='navy', linewidth=2)
 plt.axvline(rank_est, color=rank_col, linestyle='--')
-plt.text(165, sing_vals[3], 'rank estimate = %s' % rank_est, color=rank_col)
+plt.text(130, sing_vals[3], 'rank estimate = %s' % rank_est, color=rank_col)
+plt.ylim(y_lims)
 plt.yscale('log')
 plt.ylabel('Singular values')
 plt.xlabel('Singular value index')
@@ -69,4 +100,3 @@ plt.xlabel('Singular value index')
 # save the figure
 fig_fname = op.join(fig_path, 'sing_vals_ica.eps')
 plt.savefig(fig_fname)
-plt.show()
