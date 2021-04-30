@@ -65,7 +65,7 @@ filt_raw = raw.copy()
 filt_raw.load_data().filter(l_freq=1., h_freq=None)
 
 # run ICA
-ica = ICA(n_components=15, random_state=510)
+ica = ICA(n_components=15, random_state=510, max_iter='auto')
 ica.fit(filt_raw)
 
 # if desired: plot components
