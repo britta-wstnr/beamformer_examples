@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import mne
 # from mne.beamformer import make_lcmv, apply_lcmv
 from mne.datasets import sample
-from mne.preprocessing import maxwell_filter  #, find_bad_channels_maxwell
+from mne.preprocessing import maxwell_filter
 import numpy as np
 import scipy as sp
 
@@ -59,13 +59,19 @@ rank_est_sss = np.linalg.matrix_rank(cov_sss.data)
 sing_vals = sp.linalg.svd(cov.data, compute_uv=False)
 sing_vals[sing_vals <= 0] = 1e-10 * sing_vals[sing_vals > 0].min()
 
+# control font sizes
+plt.rc('font', size=18)
+plt.rc('axes', labelsize=14)
+plt.rc('xtick', labelsize=11)
+plt.rc('ytick', labelsize=11)
+
 # plot the singular value spectrum:
 rank_col = 'red'
 y_lims = (10e-43, 10e-20)
 plt.figure()
 plt.plot(sing_vals, color='navy', linewidth=2)
 plt.axvline(rank_est, color=rank_col, linestyle='--')
-plt.text(200, sing_vals[3], 'rank estimate = %s' % rank_est, color=rank_col)
+plt.text(120, 10e-33, 'rank estimate = %s' % rank_est, color=rank_col)
 plt.ylim(y_lims)
 plt.yscale('log')
 plt.ylabel('Singular values')
@@ -84,7 +90,7 @@ sing_vals[sing_vals <= 0] = 1e-10 * sing_vals[sing_vals > 0].min()
 plt.figure()
 plt.plot(sing_vals, color='navy', linewidth=2)
 plt.axvline(rank_est_sss, color=rank_col, linestyle='--')
-plt.text(75, sing_vals[3], 'rank estimate = %s' % rank_est_sss, color=rank_col)
+plt.text(80, sing_vals[3], 'rank estimate = %s' % rank_est_sss, color=rank_col)
 plt.ylim(y_lims)
 plt.yscale('log')
 plt.ylabel('Singular values')
@@ -93,3 +99,4 @@ plt.xlabel('Singular value index')
 # save the figure:
 fig_fname = op.join(fig_path, 'sing_vals_sss.eps')
 plt.savefig(fig_fname)
+plt.close('all')
